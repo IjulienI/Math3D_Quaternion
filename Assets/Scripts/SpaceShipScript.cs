@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class SpaceShipScript : MonoBehaviour
 {
-    [SerializeField] private float speed = 200;
-    [SerializeField] private float maxSpeed;
+    [SerializeField] private float maxSpeed = 100;
     [SerializeField] private float horizontalRotationSpeed;
     [SerializeField] private float verticallRotationSpeed;
 
@@ -15,9 +14,9 @@ public class SpaceShipScript : MonoBehaviour
         input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         if(Input.GetAxis("Mouse ScrollWheel") != 0)
         {
-            if(acceleration >= 0)
+            if(acceleration >= 0 && acceleration < maxSpeed)
             {
-                acceleration += Input.GetAxis("Mouse ScrollWheel");
+                acceleration += Input.GetAxis("Mouse ScrollWheel")*5;
             }
         }
         if (acceleration < 0)
@@ -25,15 +24,14 @@ public class SpaceShipScript : MonoBehaviour
             acceleration = 0;
         }
 
-        transform.position += transform.forward * acceleration * speed * Time.deltaTime;
+        transform.position += transform.forward * (acceleration * 2) * Time.deltaTime;
 
-        transform.localRotation *= ConvertToQuaternion(-Vector3.forward * acceleration, input.x);
-
+        transform.localRotation *= ConvertToQuaternion((Vector3.up * 0.2f) * 1/acceleration, input.x);
         var tiltChild = transform.GetChild(0);
-       // tiltChild.transform.localRotation *= ConvertToQuaternion();
+        tiltChild.transform.localRotation = Quaternion.Lerp(tiltChild.transform.localRotation , ConvertToQuaternion(-Vector3.forward*45, input.x), 3 * Time.deltaTime);
     }
 
-    public Quaternion ConvertToQuaternion(Vector3 axis, float angleInDegrees)
+    private Quaternion ConvertToQuaternion(Vector3 axis, float angleInDegrees)
     {
         float angleInRadians = angleInDegrees * Mathf.Deg2Rad;
         float halfAngle = angleInRadians/2;
