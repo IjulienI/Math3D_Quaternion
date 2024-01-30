@@ -1,57 +1,58 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class RotationController : MonoBehaviour
 {
-    private float rotationAnglezTilt = 40f;
-    [SerializeField] private float rotationAngley = 0.1f;
-    [SerializeField] private float rotationAnglex = 0.05f;
-    private float rotationAnglexTilt = 15f;
-    [SerializeField] private float speed = 40.0f;
+    [SerializeField] private float HorizontalRotationSpeed = 5;
+    [SerializeField] private float verticalRotationSpeed = 5;
+    [SerializeField] private float horizontalRotation = 45;
+    [SerializeField] private float tiltPower = 5;
+    [SerializeField] private float minSpeed;
+    [SerializeField] private float maxSpeed;
+
+    private float speed;
 
     private float horizontalInput;
     private float verticalInput;
 
-    void Update()
+    private void Update()
     {
-        if (horizontalInput == 0)
+        transform.position += transform.forward * speed * Time.deltaTime;
+
+        horizontalInput = Input.GetAxis("Horizontal");
+        verticalInput = Input.GetAxis("Vertical");
+
+        if(speed < minSpeed)
         {
-            verticalInput = Input.GetAxis("Horizontal");
+            speed = minSpeed;
+        }
+        else if(speed > maxSpeed)
+        {
+            speed = maxSpeed;
+        }
+        else
+        {
+            speed += Input.mouseScrollDelta.y;
         }
 
-        if (verticalInput == 0)
-        {
-            horizontalInput = Input.GetAxis("Vertical");
-        }
+        Vector3 rotX = new Vector3(transform.position.x * verticalRotationSpeed * verticalInput,0,0);
 
-        Quaternion xRotation = CalculateRotationQuaternion(rotationAnglex * verticalInput, Vector3.right);
-        Quaternion xRotationTilt = CalculateRotationQuaternion(rotationAnglexTilt * verticalInput, Vector3.right);
-        Quaternion yRotation = CalculateRotationQuaternion(rotationAngley * horizontalInput, Vector3.up);
-        Quaternion zRotationTilt = CalculateRotationQuaternion(rotationAnglezTilt * -horizontalInput, Vector3.forward);
-        transform.localRotation = zRotationTilt;
-        if (verticalInput != 0)
-        {
-            transform.localRotation = xRotationTilt;
-        }
-        transform.parent.rotation *= yRotation;
-        transform.parent.rotation *= xRotation;
-
-        transform.parent.position = transform.position + transform.forward * Time.deltaTime * speed;
+        transform.localRotation *= ConvertToQuaternion(Vector3.right, verticalRotationSpeed * -verticalInput * Time.deltaTime) * ConvertToQuaternion(Vector3.forward, -horizontalRotation * horizontalInput * Time.deltaTime) * ConvertToQuaternion(Vector3.right, tiltPower * verticalInput * Time.deltaTime);
     }
 
-    Quaternion CalculateRotationQuaternion(float angle, Vector3 axis)
+    private Quaternion ConvertToQuaternion(Vector3 axis, float angleInDegrees)
     {
-        // angle en radians
-        float angleInRadians = angle * Mathf.Deg2Rad;
+        float angleInRadians = angleInDegrees * Mathf.Deg2Rad;
+        float halfAngle = angleInRadians / 2;
 
-        // quaternion de rotation
-        Quaternion rotationQuaternion = new Quaternion(
-            axis.x * Mathf.Sin(angleInRadians / 2), // ici ca vaut 0
-            axis.y * Mathf.Sin(angleInRadians / 2), // ici ca vaut 0 pour l'axe z
-            axis.z * Mathf.Sin(angleInRadians / 2), // ici ca vaut 0 pour l'axe y
-            Mathf.Cos(angleInRadians / 2)
-        );
+        float x = axis.x * Mathf.Sin(halfAngle);
+        float y = axis.y * Mathf.Sin(halfAngle);
+        float z = axis.z * Mathf.Sin(halfAngle);
+        float w = Mathf.Cos(halfAngle);
+        return new Quaternion(x, y, z, w);
+    }
 
-        return rotationQuaternion;
+    private void OnGUI()
+    {
+        GUILayout.Label("Horizontal : " + horizontalInput + "\n" + "Vertical : " + verticalInput);
     }
 }
