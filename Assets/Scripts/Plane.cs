@@ -14,14 +14,14 @@ public class RotationController : MonoBehaviour
 
     void Update()
     {
-        if (verticalInput == 0)
-        {
-            horizontalInput = Input.GetAxis("Horizontal");
-        }
-
         if (horizontalInput == 0)
         {
-            verticalInput = Input.GetAxis("Vertical");
+            verticalInput = Input.GetAxis("Horizontal");
+        }
+
+        if (verticalInput == 0)
+        {
+            horizontalInput = Input.GetAxis("Vertical");
         }
 
         Quaternion xRotation = CalculateRotationQuaternion(rotationAnglex * verticalInput, Vector3.right);
