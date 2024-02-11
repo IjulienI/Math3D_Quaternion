@@ -2,35 +2,63 @@ using UnityEngine;
 
 public class SpaceShipScript : MonoBehaviour
 {
-    [SerializeField] private float speed = 200;
-    [SerializeField] private float maxSpeed;
+    [SerializeField] private float maxSpeed = 50;
     [SerializeField] private float horizontalRotationSpeed;
     [SerializeField] private float verticallRotationSpeed;
+    [SerializeField] private float maxAngletilt = 45;
 
     private Vector2 input;
-    private float acceleration;
+    private float acceleration = 2;
 
     private void Update()
     {
         input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         if(Input.GetAxis("Mouse ScrollWheel") != 0)
         {
-            if(acceleration >= 0)
+            if(acceleration <= maxSpeed)
             {
-                acceleration += Input.GetAxis("Mouse ScrollWheel");
+                if (acceleration >= 2)
+                {
+                    acceleration += Input.GetAxis("Mouse ScrollWheel");
+                }
+                else
+                {
+                    acceleration = 2;
+                }
             }
-        }
-        if (acceleration < 0)
-        {
-            acceleration = 0;
+            else
+            {
+                acceleration = maxSpeed;
+                 
+            }
+           
+
         }
 
-        transform.position += transform.forward * acceleration * speed * Time.deltaTime;
+        transform.position += transform.forward * acceleration * 10 * Time.deltaTime;
 
-        transform.localRotation *= ConvertToQuaternion(-Vector3.forward * acceleration, input.x);
+        transform.rotation *= ConvertToQuaternion(transform.up * acceleration / 20, input.x);
+        transform.rotation *= ConvertToQuaternion(transform.right * acceleration / 20, input.y); // la ligne qui fait qu'on peut bouger de haut en bas
 
         var tiltChild = transform.GetChild(0);
-       // tiltChild.transform.localRotation *= ConvertToQuaternion();
+        if(input.x == 0)
+        {
+            tiltChild.transform.localRotation *= ConvertToQuaternion(transform.up * acceleration/20, (Vector3.Angle(transform.up, -tiltChild.transform.right)-90)/50);
+        }
+        else
+        {
+            if(Mathf.Abs(Vector3.Angle(transform.up, -tiltChild.transform.right) - 90) <= maxAngletilt / 1+(acceleration*0.1f))
+            {
+                tiltChild.transform.localRotation *= ConvertToQuaternion(transform.up * acceleration / 50, input.x);
+            }
+            else
+            {
+                tiltChild.transform.localRotation *= ConvertToQuaternion(transform.up * acceleration / 20, (Vector3.Angle(transform.up, -tiltChild.transform.right) - 90) / 50);
+            }
+            
+        }
+       
+
     }
 
     public Quaternion ConvertToQuaternion(Vector3 axis, float angleInDegrees)
