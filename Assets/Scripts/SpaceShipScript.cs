@@ -38,7 +38,7 @@ public class SpaceShipScript : MonoBehaviour
         transform.position += transform.forward * acceleration * 10 * Time.deltaTime;
 
         transform.rotation *= ConvertToQuaternion(transform.up * acceleration / 20, input.x);
-        transform.rotation *= ConvertToQuaternion(transform.right * acceleration / 20, input.y); // la ligne qui fait qu'on peut bouger de haut en bas
+        //transform.rotation *= ConvertToQuaternion(transform.right * acceleration / 20, input.y); // la ligne qui fait qu'on peut bouger de haut en bas
 
         var tiltChild = transform.GetChild(0);
         if(input.x == 0)
